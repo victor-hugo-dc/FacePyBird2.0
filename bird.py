@@ -20,8 +20,8 @@ class Bird:
         self.width = self.player.shape[1]
     
     def update(self) -> None:
-        self.current_image = (self.current_player + 1) % 3
-        self.image = self.players[self.current_player]
+        self.current_player = (self.current_player + 1) % 3
+        self.player = self.players[self.current_player]
         self.speed += GRAVITY
 
         self.y += self.speed
@@ -31,4 +31,4 @@ class Bird:
     
     def begin(self):
         self.current_player = (self.current_player + 1) % 3
-        self.player = self.players[self.current_image]
+        self.player = self.players[self.current_player]
