@@ -16,6 +16,7 @@ class Pipe:
         else:
             self.y = SCREEN_HEIGHT - ysize
         
+        self.height = PIPE_HEIGHT
         self.width = PIPE_WIDTH
         
     def update(self):

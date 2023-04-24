@@ -17,7 +17,7 @@ class Bird:
         self.x: int = SCREEN_WIDTH // 6
         self.y: int = SCREEN_HEIGHT // 3
 
-        self.width = self.player.shape[1]
+        self.height, self.width, _ = self.player.shape
     
     def update(self) -> None:
         self.current_player = (self.current_player + 1) % 3

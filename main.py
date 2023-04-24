@@ -24,10 +24,7 @@ class FlappyBird:
         self.background = random.choice(self.backgrounds)
         self.capture = cv2.VideoCapture(1)
 
-        self.ground_group = []
-        for i in range (2):
-            ground = Ground(GROUND_WIDTH * i)
-            self.ground_group.append(ground)
+        self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
         
         self.pipe_group = []
         for i in range (2):
@@ -142,11 +139,33 @@ class FlappyBird:
         elif pitch >= PITCH_THRESHOLD:
             self.bird.bump(self.acceleration)
             self.acceleration = None
+    
+    def check_collision(self):
+
+        if self.bird.y <= 0 or self.bird.y + self.bird.height >= self.ground_group[0].y:
+            # bird is out of bounds
+            return True
+
+        for pipe in self.pipe_group:
+            if pipe.x <= self.bird.x + self.bird.width <= pipe.x + pipe.width:
+                # check collision with top pipe
+                if pipe.y <= self.bird.y <= pipe.y + pipe.height:
+                    return True
+
+                # check collision with bottom pipe
+                if pipe.y <= self.bird.y + self.bird.height <= pipe.y + pipe.height:
+                    return True
         
+        return False
+
 
     def main(self):
 
         while True:
+
+            if self.check_collision():
+                break
+
             self.update_frame()
             self.check_nod()
             self.bird.update_speed()
