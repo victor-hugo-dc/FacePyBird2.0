@@ -22,12 +22,16 @@ class Bird:
     def update(self) -> None:
         self.current_player = (self.current_player + 1) % 3
         self.player = self.players[self.current_player]
-        self.speed += GRAVITY
 
         self.y += self.speed
     
-    def bump(self):
-        self.speed = -SPEED
+    def update_speed(self) -> None:
+        if self.speed < VELOCITY_MAX:
+            self.speed += GRAVITY
+    
+    def bump(self, acceleration) -> None:
+        if acceleration:
+            self.speed = acceleration
     
     def begin(self):
         self.current_player = (self.current_player + 1) % 3
