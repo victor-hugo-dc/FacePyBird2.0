@@ -8,6 +8,7 @@ from constants import *
 from ground import Ground
 from bird import Bird
 from score import Score
+from message import Message
 
 import playsound
 
@@ -27,6 +28,8 @@ class FlappyBird:
         self.background = random.choice(self.backgrounds)
         self.capture = cv2.VideoCapture(1)
 
+        self.message = Message()
+
         self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
         
         self.pipe_group = []
@@ -41,6 +44,7 @@ class FlappyBird:
         self.score = 0
 
         self.forehead_landmark = None
+        self.nose_landmark = None
     
     def reset_variables(self):
         self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
@@ -56,7 +60,7 @@ class FlappyBird:
         self.score = 0
 
         self.forehead_landmark = None
-
+        self.nose_landmark = None
 
     def resize(self):
         scale_percent = 75
@@ -78,6 +82,7 @@ class FlappyBird:
             for face_landmarks in results.multi_face_landmarks[:1]:
 
                 self.forehead_landmark = face_landmarks.landmark[151]
+                self.nose_landmark = face_landmarks.landmark[2]
 
                 for idx, lm in enumerate(face_landmarks.landmark):
                     if idx == 33 or idx == 263 or idx == 1 or idx == 61 or idx == 291 or idx == 199:
@@ -159,6 +164,9 @@ class FlappyBird:
         self.bird.update()
     
     def show_score(self):
+        if not self.forehead_landmark:
+            return
+        
         x, y = int(self.forehead_landmark.x * SCREEN_WIDTH), int(self.forehead_landmark.y * SCREEN_HEIGHT)
         points, xoff, yoff = self.score_drawer.score(self.score, x, y)
         for no in points:
@@ -166,6 +174,14 @@ class FlappyBird:
 
             self.overlay(number, xoff, yoff)
             xoff += number.shape[1]
+    
+    def show_message(self):
+        if not self.nose_landmark:
+            return
+        
+        x, y = int(self.nose_landmark.x * SCREEN_WIDTH), int(self.nose_landmark.y * SCREEN_HEIGHT)
+        x, y = self.message.message(x, y)
+        self.overlay(self.message.image, x, y)
 
     def check_nod(self):
         pitch = self.get_pitch() or 0
@@ -208,6 +224,7 @@ class FlappyBird:
             if (self.get_pitch() or 0) >= PITCH_THRESHOLD:
                 return True
 
+            self.show_message()
             self.show_ground()
             cv2.imshow(self.window, self.frame)
 
