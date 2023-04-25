@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from constants import *
+import playsound
 
 class Bird:
     def __init__(self) -> None:
@@ -45,6 +46,7 @@ class Bird:
     
     def bump(self, acceleration) -> None:
         if acceleration:
+            playsound.playsound(WING, False)
             self.speed = acceleration
     
     def begin(self):
