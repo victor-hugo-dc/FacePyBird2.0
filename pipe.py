@@ -20,6 +20,8 @@ class Pipe:
         self.width: int = PIPE_WIDTH
 
         self.scored: bool = False
+
+        self.game_speed = GAME_SPEED
         
     def update(self):
-        self.x -= GAME_SPEED
+        self.x -= self.game_speed

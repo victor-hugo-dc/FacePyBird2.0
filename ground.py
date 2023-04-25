@@ -12,6 +12,7 @@ class Ground:
         self.y = SCREEN_HEIGHT - GROUND_HEIGHT
 
         self.width = GROUND_WIDTH
+        self.game_speed = GAME_SPEED
     
     def update(self):
-        self.x -= GAME_SPEED
+        self.x -= self.game_speed

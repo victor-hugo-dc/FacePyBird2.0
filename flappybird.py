@@ -30,21 +30,24 @@ class FlappyBird:
 
         self.message = Message()
 
-        self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
+        # self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
         
-        self.pipe_group = []
-        for i in range (2):
-            pipes = get_random_pipes(SCREEN_WIDTH * i + 800)
-            self.pipe_group.extend(pipes)
+        # self.pipe_group = []
+        # for i in range (2):
+        #     pipes = get_random_pipes(SCREEN_WIDTH * i + 800)
+        #     self.pipe_group.extend(pipes)
         
-        self.bird = Bird()
-        self.acceleration = FLAP_ACCELERATION
+        # self.bird = Bird()
+        # self.acceleration = FLAP_ACCELERATION
 
         self.score_drawer = Score()
-        self.score = 0
+        self.reset_variables()
+        # self.score = 0
 
-        self.forehead_landmark = None
-        self.nose_landmark = None
+        # self.forehead_landmark = None
+        # self.nose_landmark = None
+
+        self.start: bool = True
     
     def reset_variables(self):
         self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
@@ -221,8 +224,14 @@ class FlappyBird:
     def intro(self) -> bool:
         while self.capture.isOpened():
             self.update_frame()
-            if (self.get_pitch() or 0) >= PITCH_THRESHOLD:
+
+            pitch = self.get_pitch() or 0
+            if self.start and pitch >= PITCH_THRESHOLD:
+                self.start = False
                 return True
+            
+            elif pitch <= MIN_PITCH_THRESHOLD:
+                self.start = True
 
             self.show_message()
             self.show_ground()
@@ -239,7 +248,7 @@ class FlappyBird:
             if self.check_collision():
                 playsound.playsound(HIT, False)
                 playsound.playsound(DIE, False)
-                self.reset_variables()
+                # self.reset_variables()
                 return True
 
             self.update_frame()
@@ -255,8 +264,31 @@ class FlappyBird:
             key = cv2.waitKey(1)
             if key == ord('q'):
                 return False
+    
+    def gameover(self) -> bool:
+        while self.capture.isOpened():
+            pitch = self.get_pitch() or 0
+            if self.start and pitch >= PITCH_THRESHOLD:
+                self.start = False
+                self.reset_variables()
+                return True
+            elif pitch <= MIN_PITCH_THRESHOLD:
+                self.start = True
 
-if __name__ == '__main__':
-    game = FlappyBird()
-    while game.intro() and game.main():
-        continue
+
+            self.update_frame()
+            self.show_bird()
+            
+            for ground in self.ground_group:
+                ground.game_speed = 0
+            
+            for pipe in self.pipe_group:
+                pipe.game_speed = 0
+
+            self.show_pipes()
+            self.show_ground()
+            cv2.imshow(self.window, self.frame)
+
+            key = cv2.waitKey(1)
+            if key == ord('q'):
+                return False
