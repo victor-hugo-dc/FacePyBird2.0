@@ -25,39 +25,25 @@ class FlappyBird:
             cv2.imread(f'assets/sprites/background-day.png'),
             cv2.imread(f'assets/sprites/background-night.png')
         ]
-        self.background = random.choice(self.backgrounds)
         self.capture = cv2.VideoCapture(1)
 
-        self.message = Message()
+        self.message: Message = Message()
 
-        # self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
-        
-        # self.pipe_group = []
-        # for i in range (2):
-        #     pipes = get_random_pipes(SCREEN_WIDTH * i + 800)
-        #     self.pipe_group.extend(pipes)
-        
-        # self.bird = Bird()
-        # self.acceleration = FLAP_ACCELERATION
-
-        self.score_drawer = Score()
+        self.score_drawer: Score = Score()
         self.reset_variables()
-        # self.score = 0
-
-        # self.forehead_landmark = None
-        # self.nose_landmark = None
 
         self.start: bool = True
     
     def reset_variables(self):
-        self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
+        self.background = random.choice(self.backgrounds)
+        self.ground_group: list[Ground] = [Ground(GROUND_WIDTH * i) for i in range(2)]
         
-        self.pipe_group = []
+        self.pipe_group: list[Pipe] = []
         for i in range (2):
             pipes = get_random_pipes(SCREEN_WIDTH * i + 800)
             self.pipe_group.extend(pipes)
         
-        self.bird = Bird()
+        self.bird: Bird = Bird()
         self.acceleration = FLAP_ACCELERATION
 
         self.score = 0
@@ -66,11 +52,10 @@ class FlappyBird:
         self.nose_landmark = None
 
     def resize(self):
-        scale_percent = 75
-        width = int(self.frame.shape[1] * scale_percent / 100)
-        height = int(self.frame.shape[0] * scale_percent / 100)
-        dim = (width, height)
-        self.frame = cv2.resize(self.frame, dim, interpolation = cv2.INTER_AREA)
+        scale = 0.75
+        height, width, _ = self.frame.shape
+        height, width = int(height * scale), int(width * scale)
+        self.frame = cv2.resize(self.frame, (width, height), interpolation = cv2.INTER_AREA)
     
     
     def get_pitch(self):
@@ -162,9 +147,9 @@ class FlappyBird:
             self.overlay(ground.base, ground.x, ground.y)
             ground.update()
             
-    def show_bird(self):
+    def show_bird(self, gameover: bool = False):
         self.overlay(self.bird.player, self.bird.x, self.bird.y)
-        self.bird.update()
+        self.bird.update(gameover)
     
     def show_score(self):
         if not self.forehead_landmark:
@@ -223,6 +208,7 @@ class FlappyBird:
     
     def intro(self) -> bool:
         while self.capture.isOpened():
+
             self.update_frame()
 
             pitch = self.get_pitch() or 0
@@ -248,7 +234,6 @@ class FlappyBird:
             if self.check_collision():
                 playsound.playsound(HIT, False)
                 playsound.playsound(DIE, False)
-                # self.reset_variables()
                 return True
 
             self.update_frame()
@@ -257,8 +242,8 @@ class FlappyBird:
             self.show_pipes()
             self.check_score()
             self.show_score()
-            self.show_bird()
             self.show_ground()
+            self.show_bird()
             cv2.imshow(self.window, self.frame)
 
             key = cv2.waitKey(1)
@@ -266,18 +251,20 @@ class FlappyBird:
                 return False
     
     def gameover(self) -> bool:
+        self.bird.speed = VELOCITY_MAX
+
         while self.capture.isOpened():
+
+            self.update_frame()
+
             pitch = self.get_pitch() or 0
             if self.start and pitch >= PITCH_THRESHOLD:
                 self.start = False
                 self.reset_variables()
                 return True
+            
             elif pitch <= MIN_PITCH_THRESHOLD:
                 self.start = True
-
-
-            self.update_frame()
-            self.show_bird()
             
             for ground in self.ground_group:
                 ground.game_speed = 0
@@ -287,6 +274,7 @@ class FlappyBird:
 
             self.show_pipes()
             self.show_ground()
+            self.show_bird(True)
             cv2.imshow(self.window, self.frame)
 
             key = cv2.waitKey(1)

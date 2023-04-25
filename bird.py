@@ -38,11 +38,14 @@ class Bird:
         self.rotation: int = 45
         self.visible_rotation: int = 20
     
-    def update(self) -> None:
-        self.current_player = (self.current_player + 1) % 3
+    def update(self, gameover: bool = False) -> None:
+        if not gameover:
+            self.current_player = (self.current_player + 1) % 3
+            
         self.player = self.players[self.current_player]
 
-        self.y += self.speed
+        if self.y + self.height <= SCREEN_HEIGHT - GROUND_HEIGHT:
+            self.y += self.speed
 
         self.update_rotation()
 
