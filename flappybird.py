@@ -33,6 +33,8 @@ class FlappyBird:
         self.score_drawer: Score = Score()
         self.reset_variables()
 
+        self.get_highscore()
+
         self.start: bool = True
     
     def reset_variables(self):
@@ -47,7 +49,7 @@ class FlappyBird:
         self.bird: Bird = Bird()
         self.acceleration = FLAP_ACCELERATION
 
-        self.score = 40
+        self.score = 0
 
         self.forehead_landmark = None
         self.nose_landmark = None
@@ -66,8 +68,7 @@ class FlappyBird:
         image.flags.writeable = False
         results = self.face_mesh.process(image)
 
-        face_3d = []
-        face_2d = []
+        face_3d, face_2d = [], []
 
         if results.multi_face_landmarks:
             for face_landmarks in results.multi_face_landmarks[:1]:
@@ -99,6 +100,14 @@ class FlappyBird:
                 return angles[0] * 360
             
         return None
+    
+    def get_highscore(self):
+        with open('assets/highscore.txt', 'r') as f:
+            self.highscore = int(f.read().strip())
+    
+    def set_highscore(self):
+        with open('assets/highscore.txt', 'w') as f:
+            f.write(str(self.highscore))
     
     def remove_background(self):
         height, width, _ = self.frame.shape
@@ -260,7 +269,8 @@ class FlappyBird:
     
     def gameover(self) -> bool:
         self.bird.speed = VELOCITY_MAX
-        scoreboard = self.scoreboard.create_scoreboard(self.score)
+        self.highscore = max(self.score, self.highscore)
+        scoreboard = self.scoreboard.create_scoreboard(self.score, self.highscore)
 
         while self.capture.isOpened():
 
@@ -290,4 +300,7 @@ class FlappyBird:
 
             key = cv2.waitKey(1)
             if key == ord('q'):
-                return False
+                break
+        
+        self.set_highscore()
+        return False

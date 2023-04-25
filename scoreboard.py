@@ -45,7 +45,7 @@ class ScoreBoard:
         for c in range(channels):
             self.scoreboard[y1:y2, x1:x2, c] = (alpha * image[y1o:y2o, x1o:x2o, c] + alpha_inv * self.scoreboard[y1:y2, x1:x2, c])
     
-    def create_scoreboard(self, score: int):
+    def create_scoreboard(self, score: int, highscore: int):
 
         if score >= 40:
             self.overlay(self.platinum, 30, 110)
@@ -66,5 +66,10 @@ class ScoreBoard:
             self.overlay(self.score.numbers[i], x, y)
             x += self.score.numbers[i].shape[1]
         
-        # TODO: similar logic for high score
+        points, width, _, _ = self.score.score(highscore, 0, 0)
+        x, y = 210 - width, 145
+        for i in points:
+            self.overlay(self.score.numbers[i], x, y)
+            x += self.score.numbers[i].shape[1]
+
         return self.scoreboard
