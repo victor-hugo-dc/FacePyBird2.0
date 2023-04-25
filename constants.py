@@ -21,6 +21,12 @@ GROUND_HEIGHT= 100
 PITCH_THRESHOLD = 30
 MIN_PITCH_THRESHOLD = 15
 
+DIE = "./assets/audio/die.wav"
+HIT = "./assets/audio/hit.wav"
+POINT = "./assets/audio/point.wav"
+SWOOSH = "./assets/audio/swoosh.wav"
+WING = "./assets/audio/wing.wav"
+
 import random
 from pipe import Pipe
 
