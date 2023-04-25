@@ -9,6 +9,8 @@ from ground import Ground
 from bird import Bird
 from score import Score
 
+import playsound
+
 class FlappyBird:
 
     def __init__(self) -> None:
@@ -38,6 +40,24 @@ class FlappyBird:
         self.score_drawer = Score()
         self.score = 0
 
+        self.forehead_landmark = None
+    
+    def reset_variables(self):
+        self.ground_group = [Ground(GROUND_WIDTH * i) for i in range(2)]
+        
+        self.pipe_group = []
+        for i in range (2):
+            pipes = get_random_pipes(SCREEN_WIDTH * i + 800)
+            self.pipe_group.extend(pipes)
+        
+        self.bird = Bird()
+        self.acceleration = FLAP_ACCELERATION
+
+        self.score = 0
+
+        self.forehead_landmark = None
+
+
     def resize(self):
         scale_percent = 75
         width = int(self.frame.shape[1] * scale_percent / 100)
@@ -57,8 +77,7 @@ class FlappyBird:
         if results.multi_face_landmarks:
             for face_landmarks in results.multi_face_landmarks[:1]:
 
-                forehead_landmark = face_landmarks.landmark[151]
-                self.show_score(forehead_landmark)
+                self.forehead_landmark = face_landmarks.landmark[151]
 
                 for idx, lm in enumerate(face_landmarks.landmark):
                     if idx == 33 or idx == 263 or idx == 1 or idx == 61 or idx == 291 or idx == 199:
@@ -139,8 +158,8 @@ class FlappyBird:
         self.overlay(self.bird.player, self.bird.x, self.bird.y)
         self.bird.update()
     
-    def show_score(self, landmark):
-        x, y = int(landmark.x * SCREEN_WIDTH), int(landmark.y * SCREEN_HEIGHT)
+    def show_score(self):
+        x, y = int(self.forehead_landmark.x * SCREEN_WIDTH), int(self.forehead_landmark.y * SCREEN_HEIGHT)
         points, xoff, yoff = self.score_drawer.score(self.score, x, y)
         for no in points:
             number: np.ndarray = self.score_drawer.numbers[no]
@@ -181,26 +200,45 @@ class FlappyBird:
             if not pipe.scored and past_midpoint:
                 self.score += 1
                 pipe.scored = True
-
-    def main(self):
-
+                playsound.playsound(POINT, False)
+    
+    def intro(self) -> bool:
         while self.capture.isOpened():
-
-            if self.check_collision():
-                break
-
             self.update_frame()
-            self.check_nod()
-            self.bird.update_speed()
-            self.show_pipes()
-            self.show_bird()
-            self.check_score()
+            if (self.get_pitch() or 0) >= PITCH_THRESHOLD:
+                return True
+
             self.show_ground()
             cv2.imshow(self.window, self.frame)
 
             key = cv2.waitKey(1)
             if key == ord('q'):
-                break
+                return False
+
+    def main(self) -> bool:
+
+        while self.capture.isOpened():
+
+            if self.check_collision():
+                playsound.playsound(DIE, False)
+                self.reset_variables()
+                return True
+
+            self.update_frame()
+            self.check_nod()
+            self.bird.update_speed()
+            self.show_pipes()
+            self.check_score()
+            self.show_score()
+            self.show_bird()
+            self.show_ground()
+            cv2.imshow(self.window, self.frame)
+
+            key = cv2.waitKey(1)
+            if key == ord('q'):
+                return False
 
 if __name__ == '__main__':
-    FlappyBird().main()
+    game = FlappyBird()
+    while game.intro() and game.main():
+        continue
