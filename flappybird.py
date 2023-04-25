@@ -9,6 +9,7 @@ from ground import Ground
 from bird import Bird
 from score import Score
 from message import Message
+from scoreboard import ScoreBoard
 
 import playsound
 
@@ -46,10 +47,12 @@ class FlappyBird:
         self.bird: Bird = Bird()
         self.acceleration = FLAP_ACCELERATION
 
-        self.score = 0
+        self.score = 40
 
         self.forehead_landmark = None
         self.nose_landmark = None
+
+        self.scoreboard = ScoreBoard()
 
     def resize(self):
         scale = 0.75
@@ -156,7 +159,7 @@ class FlappyBird:
             return
         
         x, y = int(self.forehead_landmark.x * SCREEN_WIDTH), int(self.forehead_landmark.y * SCREEN_HEIGHT)
-        points, xoff, yoff = self.score_drawer.score(self.score, x, y)
+        points, _, xoff, yoff = self.score_drawer.score(self.score, x, y)
         for no in points:
             number: np.ndarray = self.score_drawer.numbers[no]
 
@@ -170,6 +173,11 @@ class FlappyBird:
         x, y = int(self.nose_landmark.x * SCREEN_WIDTH), int(self.nose_landmark.y * SCREEN_HEIGHT)
         x, y = self.message.message(x, y)
         self.overlay(self.message.image, x, y)
+    
+    def show_scoreboard(self, scoreboard):
+        _, width, _ = scoreboard.shape
+        x, y = int(self.forehead_landmark.x * SCREEN_WIDTH) - (width // 2), int(self.forehead_landmark.y * SCREEN_HEIGHT)
+        self.overlay(scoreboard, x, y)
 
     def check_nod(self):
         pitch = self.get_pitch() or 0
@@ -252,6 +260,7 @@ class FlappyBird:
     
     def gameover(self) -> bool:
         self.bird.speed = VELOCITY_MAX
+        scoreboard = self.scoreboard.create_scoreboard(self.score)
 
         while self.capture.isOpened():
 
@@ -272,8 +281,10 @@ class FlappyBird:
             for pipe in self.pipe_group:
                 pipe.game_speed = 0
 
+            self.show_scoreboard(scoreboard)
             self.show_pipes()
             self.show_ground()
+
             self.show_bird(True)
             cv2.imshow(self.window, self.frame)
 
