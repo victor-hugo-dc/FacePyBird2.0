@@ -36,6 +36,9 @@ class FlappyBird:
         self.get_highscore()
 
         self.start: bool = True
+
+        # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        # self.out = cv2.VideoWriter('./out.mp4', fourcc, 20.0, (SCREEN_WIDTH, SCREEN_HEIGHT))
     
     def reset_variables(self):
         self.background = random.choice(self.backgrounds)
@@ -239,6 +242,7 @@ class FlappyBird:
             self.show_message()
             self.show_ground()
             cv2.imshow(self.window, self.frame)
+            # self.out.write(self.frame)
 
             key = cv2.waitKey(1)
             if key == ord('q'):
@@ -262,6 +266,7 @@ class FlappyBird:
             self.show_ground()
             self.show_bird()
             cv2.imshow(self.window, self.frame)
+            # self.out.write(self.frame)
 
             key = cv2.waitKey(1)
             if key == ord('q'):
@@ -297,10 +302,12 @@ class FlappyBird:
 
             self.show_bird(True)
             cv2.imshow(self.window, self.frame)
+            # self.out.write(self.frame)
 
             key = cv2.waitKey(1)
             if key == ord('q'):
                 break
         
         self.set_highscore()
+        cv2.destroyAllWindows()
         return False
